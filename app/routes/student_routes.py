@@ -12,7 +12,11 @@ router = APIRouter()
 
 
 @router.post("/students")
-def create_student(student: StudentCreate, db: Session = Depends(get_db)):
+def create_student(
+    student: StudentCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(admin_only)
+):
     new_student = Student(
         name=student.name,
         email=student.email,
@@ -48,7 +52,8 @@ def get_student(student_id: int, db: Session = Depends(get_db)):
 def update_student(
     student_id: int,
     updated_student: StudentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(admin_only)
 ):
     student = db.query(Student).filter(Student.id == student_id).first()
 
