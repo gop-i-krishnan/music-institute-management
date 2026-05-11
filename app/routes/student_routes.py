@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.student import Student
 from app.schemas.student_schema import StudentCreate
 from app.schemas.student_schema import StudentUpdate
+from app.core.security import get_current_user
+from app.core.security import admin_only
 
 router = APIRouter()
 
@@ -27,10 +29,14 @@ def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     }
     
 @router.get("/students")
-def get_students(db: Session = Depends(get_db)):
-    students = db.query(Student).all()
-
-    return students
+def get_students(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    return {
+        "message": "Protected route working",
+        "current_user": current_user
+    }
 
 @router.get("/students/{student_id}")
 def get_student(student_id: int, db: Session = Depends(get_db)):
@@ -59,8 +65,20 @@ def update_student(
     }
     
 @router.delete("/students/{student_id}")
-def delete_student(student_id: int, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+def delete_student(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(admin_only)
+):
+    student = db.query(Student).filter(
+        Student.id == student_id
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
 
     db.delete(student)
 
