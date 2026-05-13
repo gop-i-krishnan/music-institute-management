@@ -7,6 +7,9 @@ from app.schemas.student_schema import StudentCreate
 from app.schemas.student_schema import StudentUpdate
 from app.core.security import get_current_user
 from app.core.security import admin_only
+from app.schemas.student_schema import (
+    StudentResponse
+)
 
 router = APIRouter()
 
@@ -42,9 +45,24 @@ def get_students(
         "current_user": current_user
     }
 
-@router.get("/students/{student_id}")
-def get_student(student_id: int, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+@router.get(
+    "/students/{student_id}",
+    response_model=StudentResponse
+)
+def get_student(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    student = db.query(Student).filter(
+        Student.id == student_id
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
 
     return student
 
