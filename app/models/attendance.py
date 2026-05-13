@@ -9,6 +9,7 @@ from sqlalchemy import (
 from datetime import datetime
 
 from app.database import Base
+from sqlalchemy.orm import relationship
 
 
 class Attendance(Base):
@@ -28,4 +29,9 @@ class Attendance(Base):
     created_at = Column(
         DateTime,
         default=datetime.utcnow
+    )
+    
+    student = relationship(
+        "Student",
+        back_populates="attendance_records"
     )

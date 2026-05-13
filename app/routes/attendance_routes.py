@@ -12,11 +12,13 @@ from app.models.attendance import Attendance
 from app.models.student import Student
 
 from app.schemas.attendance_schema import (
-    AttendanceCreate
+    AttendanceCreate,
+    AttendanceResponse
 )
 
 from app.core.security import (
-    admin_only
+    admin_only,
+    get_current_user
 )
 
 router = APIRouter()
@@ -51,5 +53,27 @@ def mark_attendance(
     db.refresh(new_attendance)
 
     return {
-        "message": "Attendance marked successfully"
+        "student_name": student.name,
+        "attendance_status": new_attendance.status
     }
+
+@router.get(
+    "/students/{student_id}/attendance",
+    response_model=list[AttendanceResponse]
+)
+def get_student_attendance(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    student = db.query(Student).filter(
+        Student.id == student_id
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    return student.attendance_records
