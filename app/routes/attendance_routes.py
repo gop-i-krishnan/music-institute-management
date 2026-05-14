@@ -7,14 +7,16 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-
-from app.models.attendance import Attendance
 from app.models.student import Student
 
 from app.schemas.attendance_schema import (
     AttendanceCreate,
     AttendanceResponse
 )
+from app.services.attendance_service import (
+    create_attendance_record
+)
+
 
 from app.core.security import (
     admin_only,
@@ -30,31 +32,15 @@ def mark_attendance(
     db: Session = Depends(get_db),
     current_user: dict = Depends(admin_only)
 ):
-    student = db.query(Student).filter(
-        Student.id == attendance.student_id
-    ).first()
-
-    if not student:
-        raise HTTPException(
-            status_code=404,
-            detail="Student not found"
-        )
-
-    new_attendance = Attendance(
-        student_id=attendance.student_id,
-        status=attendance.status,
-        marked_by=current_user["email"]
+    new_attendance = create_attendance_record(
+        attendance,
+        db,
+        current_user
     )
 
-    db.add(new_attendance)
-
-    db.commit()
-
-    db.refresh(new_attendance)
-
     return {
-        "student_name": student.name,
-        "attendance_status": new_attendance.status
+        "message": "Attendance marked successfully",
+        "attendance_id": new_attendance.id
     }
 
 @router.get(
