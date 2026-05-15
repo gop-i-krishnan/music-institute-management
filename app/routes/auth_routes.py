@@ -15,6 +15,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 router = APIRouter()
 
 
+# Register a new user and store the password as a hash.
 @router.post("/register")
 def register_user(
     user: UserCreate,
@@ -39,6 +40,8 @@ def register_user(
         "message": "User registered successfully"
     }
     
+
+# Authenticate a user and return a bearer token for protected routes.
 @router.post("/login")
 def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -54,6 +57,7 @@ def login_user(
             detail="Invalid email or password"
         )
 
+    # Verify the submitted password against the stored password hash.
     valid_password = verify_password(
         form_data.password,
         existing_user.hashed_password
@@ -65,6 +69,7 @@ def login_user(
             detail="Invalid email or password"
         )
 
+    # Store the user's email and role inside the token payload.
     access_token = create_access_token(
         data={
             "sub": existing_user.email,

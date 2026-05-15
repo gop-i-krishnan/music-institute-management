@@ -12,15 +12,19 @@ from app.routes.attendance_routes import (
     router as attendance_router
 )
 
+# Create database tables for all imported SQLAlchemy models.
 Base.metadata.create_all(bind=engine)
 
+# FastAPI application instance.
 app = FastAPI()
 
+# Register all route groups with the application.
 app.include_router(student_router)
 app.include_router(auth_router)
 app.include_router(attendance_router)
 
 
+# Simple health-check route for confirming the backend is running.
 @app.get("/")
 def home():
     return {"message": "Music Institute Backend Running"}

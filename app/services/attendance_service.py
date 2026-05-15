@@ -4,6 +4,7 @@ from app.models.student import Student
 from app.models.attendance import Attendance
 
 
+# Create an attendance record after confirming the student exists.
 def create_attendance_record(
     attendance,
     db,
@@ -19,6 +20,7 @@ def create_attendance_record(
             detail="Student not found"
         )
 
+    # Store who marked the attendance using the current user's email.
     new_attendance = Attendance(
         student_id=attendance.student_id,
         status=attendance.status,

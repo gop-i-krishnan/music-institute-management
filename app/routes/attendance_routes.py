@@ -26,6 +26,7 @@ from app.core.security import (
 router = APIRouter()
 
 
+# Mark attendance for a student. Only admin users can access this route.
 @router.post("/attendance")
 def mark_attendance(
     attendance: AttendanceCreate,
@@ -43,6 +44,8 @@ def mark_attendance(
         "attendance_id": new_attendance.id
     }
 
+
+# Return all attendance records for a specific student.
 @router.get(
     "/students/{student_id}/attendance",
     response_model=list[AttendanceResponse]
@@ -52,6 +55,7 @@ def get_student_attendance(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    # Confirm the student exists before returning related attendance records.
     student = db.query(Student).filter(
         Student.id == student_id
     ).first()

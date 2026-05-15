@@ -2,14 +2,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+# PostgreSQL connection URL for the music institute database.
 DATABASE_URL = "postgresql://postgres:gopi123@localhost/music_institute_db"
 
+# SQLAlchemy engine manages the database connection pool.
 engine = create_engine(DATABASE_URL)
 
+# Session factory used by routes and services for database work.
 SessionLocal = sessionmaker(bind=engine)
 
+# Base class used by all SQLAlchemy model classes.
 Base = declarative_base()
 
+
+# Dependency that provides a database session and closes it after the request.
 def get_db():
     db = SessionLocal()
     try:
