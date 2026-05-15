@@ -27,12 +27,14 @@ router = APIRouter()
 
 
 # Mark attendance for a student. Only admin users can access this route.
+# The service layer handles student validation and database insert work.
 @router.post("/attendance")
 def mark_attendance(
     attendance: AttendanceCreate,
     db: Session = Depends(get_db),
     current_user: dict = Depends(admin_only)
 ):
+    # Delegate record creation so route code stays focused on HTTP concerns.
     new_attendance = create_attendance_record(
         attendance,
         db,
@@ -46,6 +48,7 @@ def mark_attendance(
 
 
 # Return all attendance records for a specific student.
+# Authenticated users can view attendance, but only admins can mark it.
 @router.get(
     "/students/{student_id}/attendance",
     response_model=list[AttendanceResponse]
@@ -66,4 +69,5 @@ def get_student_attendance(
             detail="Student not found"
         )
 
+    # SQLAlchemy loads attendance rows through Student.attendance_records.
     return student.attendance_records

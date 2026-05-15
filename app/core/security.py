@@ -11,7 +11,7 @@ pwd_context = CryptContext(
     deprecated="auto"
 )
 
-# JWT signing settings.
+# JWT signing settings used when access tokens are created and verified.
 SECRET_KEY = "mysecretkey"
 
 ALGORITHM = "HS256"
@@ -43,8 +43,10 @@ def verify_password(
 
 # Create a signed JWT containing user data and an expiration time.
 def create_access_token(data: dict):
+    # Copy the payload so the caller's original dictionary is not modified.
     to_encode = data.copy()
 
+    # Add an expiration time so tokens stop working after the configured window.
     expire = datetime.utcnow() + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
@@ -63,6 +65,7 @@ def create_access_token(data: dict):
 # Decode and validate an access token, then return the authenticated user data.
 def verify_access_token(token: str):
     try:
+        # Decode the token and validate its signature and expiration time.
         payload = jwt.decode(
             token,
             SECRET_KEY,
@@ -73,6 +76,7 @@ def verify_access_token(token: str):
 
         role = payload.get("role")
 
+        # The subject claim identifies the logged-in user.
         if email is None:
             raise HTTPException(
                 status_code=401,
@@ -102,6 +106,7 @@ def get_current_user(
 def admin_only(
     current_user: dict = Depends(get_current_user)
 ):
+    # Protected admin routes call this dependency before the route function runs.
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=403,

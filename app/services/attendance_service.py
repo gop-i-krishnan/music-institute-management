@@ -5,11 +5,13 @@ from app.models.attendance import Attendance
 
 
 # Create an attendance record after confirming the student exists.
+# Keeping this in a service makes the route easier to read and reuse.
 def create_attendance_record(
     attendance,
     db,
     current_user
 ):
+    # Validate that the attendance request points to a real student.
     student = db.query(Student).filter(
         Student.id == attendance.student_id
     ).first()
@@ -27,6 +29,7 @@ def create_attendance_record(
         marked_by=current_user["email"]
     )
 
+    # Insert the attendance row and refresh it to get generated values like id.
     db.add(new_attendance)
 
     db.commit()

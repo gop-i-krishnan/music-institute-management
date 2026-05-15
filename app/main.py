@@ -13,6 +13,7 @@ from app.routes.attendance_routes import (
 )
 
 # Create database tables for all imported SQLAlchemy models.
+# In production, Alembic migrations are usually preferred for schema changes.
 Base.metadata.create_all(bind=engine)
 
 # FastAPI application instance.

@@ -1,4 +1,3 @@
-from unittest import skip
 from sqlalchemy import desc
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
@@ -13,17 +12,25 @@ from app.core.security import admin_only
 from app.schemas.student_schema import (
     StudentResponse
 )
+from app.schemas.common_schema import (
+    StandardResponse
+)
 
 router = APIRouter()
 
 
-# Create a new student record. Only admin users can access this route.
-@router.post("/students")
+# Create a new student record and return it inside the standard API response.
+# Access is restricted to admins through the admin_only dependency.
+@router.post(
+    "/students",
+    response_model=StandardResponse
+)
 def create_student(
     student: StudentCreate,
     db: Session = Depends(get_db),
     current_user: dict = Depends(admin_only)
 ):
+    # Build the SQLAlchemy model object from the validated request body.
     new_student = Student(
         name=student.name,
         email=student.email,
@@ -31,17 +38,24 @@ def create_student(
         course=student.course
     )
 
+    # Save the student and refresh it so generated fields like id are available.
     db.add(new_student)
     db.commit()
     db.refresh(new_student)
 
-    return {
-        "message": "Student created successfully"
-    }
-    
-# Retrieve students using dynamic filtering, searching,
-# sorting, and paginated response architecture.
-@router.get("/students")
+    # Convert the ORM object into the response schema before returning it.
+    return StandardResponse(
+        success=True,
+        message="Student created successfully",
+        data=StudentResponse.model_validate(new_student)
+    )
+
+# Retrieve students using optional filters, safe sorting, and pagination.
+# The response uses StandardResponse so list data and pagination meta stay consistent.
+@router.get(
+    "/students",
+    response_model=StandardResponse
+)
 def get_students(
     course: str = None,
     name: str = None,
@@ -52,14 +66,16 @@ def get_students(
     sort_order: str = "asc",
     current_user: dict = Depends(get_current_user)
 ):
-    # Start with the base student query and narrow it down as filters are provided.
+    # Start with all students and narrow the query only when filters are provided.
     query = db.query(Student)
 
+    # Filter by partial course name using a case-insensitive match.
     if course:
         query = query.filter(
             Student.course.ilike(f"%{course}%")
         )
 
+    # Filter by partial student name using a case-insensitive match.
     if name:
         query = query.filter(
             Student.name.ilike(f"%{name}%")
@@ -78,6 +94,7 @@ def get_students(
             status_code=400,
             detail="Invalid sort field"
         )
+
     # Apply the requested sort direction to the selected student model field.
     if sort_order == "desc":
         query = query.order_by(
@@ -88,21 +105,28 @@ def get_students(
             getattr(Student, sort_by)
         )
 
-    # Calculate pagination metadata before applying offset and limit.
+    # Count all matching rows before slicing the query for the current page.
     total = query.count()
     total_pages = (total + limit - 1) // limit
     skip = (page - 1) * limit
+
+    # Fetch only the rows that belong to the requested page.
     students = query.offset(skip).limit(limit).all()
 
-    return {
-        "total": total,
-        "page": page,
-        "limit": limit,
-        "total_pages": total_pages,
-        "data": students
-    }
+    # Return records plus metadata that the frontend can use for pagination UI.
+    return StandardResponse(
+        success=True,
+        message="Students retrieved successfully",
+        data=[StudentResponse.model_validate(s) for s in students],
+        meta={
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+    )
 
-# Fetch a single student by ID for authenticated users.
+# Fetch a single student by ID, including attendance data from the relationship.
 @router.get(
     "/students/{student_id}",
     response_model=StudentResponse
@@ -112,10 +136,12 @@ def get_student(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    # Look up the student by primary key.
     student = db.query(Student).filter(
         Student.id == student_id
     ).first()
 
+    # Return a clear 404 if the requested student does not exist.
     if not student:
         raise HTTPException(
             status_code=404,
@@ -132,20 +158,25 @@ def update_student(
     db: Session = Depends(get_db),
     current_user: dict = Depends(admin_only)
 ):
+    # Load the existing student record before changing its fields.
     student = db.query(Student).filter(Student.id == student_id).first()
 
+    # Copy validated request values onto the database model.
     student.name = updated_student.name
     student.email = updated_student.email
     student.phone = updated_student.phone
     student.course = updated_student.course
 
+    # Persist the changes and refresh the model for the response.
     db.commit()
     db.refresh(student)
 
-    return {
-        "message": "Student updated successfully"
-    }
-    
+    return StandardResponse(
+        success=True,
+        message="Student updated successfully",
+        data=StudentResponse.model_validate(student)
+    )
+
 # Delete a student record by ID. Only admin users can access this route.
 @router.delete("/students/{student_id}")
 def delete_student(
@@ -153,6 +184,7 @@ def delete_student(
     db: Session = Depends(get_db),
     current_user: dict = Depends(admin_only)
 ):
+    # Find the student first so the API can return 404 for missing records.
     student = db.query(Student).filter(
         Student.id == student_id
     ).first()
@@ -163,10 +195,12 @@ def delete_student(
             detail="Student not found"
         )
 
+    # Remove the student row from the database.
     db.delete(student)
 
     db.commit()
 
-    return {
-        "message": "Student deleted successfully"
-    }
+    return StandardResponse(
+        success=True,
+        message="Student deleted successfully"
+    )

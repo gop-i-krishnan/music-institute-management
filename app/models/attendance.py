@@ -13,13 +13,14 @@ from sqlalchemy.orm import relationship
 
 
 # SQLAlchemy model for attendance entries marked for students.
+# Each row represents one attendance mark for one student.
 class Attendance(Base):
     __tablename__ = "attendance"
 
     # Primary key for each attendance record.
     id = Column(Integer, primary_key=True, index=True)
 
-    # Links each attendance record to a student.
+    # Links each attendance record to a student through students.id.
     student_id = Column(
         Integer,
         ForeignKey("students.id")
@@ -38,6 +39,7 @@ class Attendance(Base):
     )
     
     # Relationship back to the student who owns this attendance record.
+    # back_populates keeps this relationship linked with Student.attendance_records.
     student = relationship(
         "Student",
         back_populates="attendance_records"

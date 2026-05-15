@@ -17,8 +17,10 @@ Base = declarative_base()
 
 # Dependency that provides a database session and closes it after the request.
 def get_db():
+    # Each request gets its own session instance.
     db = SessionLocal()
     try:
         yield db
     finally:
+        # Always close the session, even if the route raises an error.
         db.close()

@@ -5,6 +5,7 @@ from app.schemas.attendance_schema import (
 
 
 # Request body used when creating a student.
+# FastAPI validates incoming JSON against these required fields.
 class StudentCreate(BaseModel):
     name: str
     email: str
@@ -13,6 +14,7 @@ class StudentCreate(BaseModel):
     
 
 # Request body used when updating a student.
+# The current update route expects a full replacement of these fields.
 class StudentUpdate(BaseModel):
     name: str
     email: str
@@ -21,6 +23,7 @@ class StudentUpdate(BaseModel):
 
 
 # Response model for returning student details with attendance records.
+# model_validate can convert matching SQLAlchemy Student objects into this shape.
 class StudentResponse(BaseModel):
     id: int
     name: str

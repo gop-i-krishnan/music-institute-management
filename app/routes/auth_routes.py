@@ -16,13 +16,16 @@ router = APIRouter()
 
 
 # Register a new user and store the password as a hash.
+# This creates the account that can later receive a JWT from /login.
 @router.post("/register")
 def register_user(
     user: UserCreate,
     db: Session = Depends(get_db)
 ):
+    # Hash the raw password before storing the user record.
     hashed_pw = hash_password(user.password)
 
+    # Build the user model with the hashed password and selected role.
     new_user = User(
         name=user.name,
         email=user.email,
@@ -30,6 +33,7 @@ def register_user(
         role=user.role
     )
 
+    # Save the user to the database.
     db.add(new_user)
 
     db.commit()
@@ -42,15 +46,18 @@ def register_user(
     
 
 # Authenticate a user and return a bearer token for protected routes.
+# OAuth2PasswordRequestForm sends the email value in form_data.username.
 @router.post("/login")
 def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
+    # Find the user by email before checking the submitted password.
     existing_user = db.query(User).filter(
         User.email == form_data.username
     ).first()
 
+    # Use the same generic error so attackers cannot tell which field failed.
     if not existing_user:
         raise HTTPException(
             status_code=401,
@@ -63,6 +70,7 @@ def login_user(
         existing_user.hashed_password
     )
 
+    # Use the same generic error when the password check fails.
     if not valid_password:
         raise HTTPException(
             status_code=401,
