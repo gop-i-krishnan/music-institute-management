@@ -39,7 +39,8 @@ def create_student(
         "message": "Student created successfully"
     }
     
-# List students with optional filtering, sorting, and pagination.
+# Retrieve students using dynamic filtering, searching,
+# sorting, and paginated response architecture.
 @router.get("/students")
 def get_students(
     course: str = None,
@@ -64,6 +65,19 @@ def get_students(
             Student.name.ilike(f"%{name}%")
         )
 
+    # Restrict sortable fields to prevent invalid
+    # attribute access and unsafe query behavior.
+    allowed_sort_fields = [
+        "id",
+        "name",
+        "email",
+        "course"
+    ]
+    if sort_by not in allowed_sort_fields:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid sort field"
+        )
     # Apply the requested sort direction to the selected student model field.
     if sort_order == "desc":
         query = query.order_by(
