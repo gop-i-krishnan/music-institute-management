@@ -1,0 +1,17 @@
+2026-05-16 11:50:50,724 WARNING app.core.logger Duplicate student email attempted: user@example.com
+2026-05-16 12:00:36,423 WARNING app.core.logger Duplicate registration attempted: admin@test.com
+2026-05-16 12:17:16,889 WARNING app.core.logger Duplicate registration attempted: admin@test.com
+2026-05-16 13:49:51,568 INFO app.core.logger Student created successfully: gopi123@test.com
+2026-05-16 13:50:13,026 WARNING app.core.logger Duplicate student email attempted: gopi123@test.com
+2026-05-16 20:07:08,950 INFO app.core.logger Incoming request: GET /docs
+2026-05-16 20:07:08,952 INFO app.core.logger Completed request: GET /docs Status=200 Duration=0.0000s
+2026-05-16 20:07:09,105 INFO app.core.logger Incoming request: GET /openapi.json
+2026-05-16 20:07:09,160 INFO app.core.logger Completed request: GET /openapi.json Status=200 Duration=0.0548s
+2026-05-16 20:07:25,846 INFO app.core.logger Incoming request: GET /students
+2026-05-16 20:07:25,856 INFO app.core.logger Completed request: GET /students Status=401 Duration=0.0099s
+2026-05-16 20:07:35,697 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:07:35,931 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2341s
+2026-05-16 20:07:39,423 INFO app.core.logger Incoming request: GET /students
+2026-05-16 20:07:39,446 INFO app.core.logger Completed request: GET /students Status=200 Duration=0.0237s
+2026-05-16 20:08:57,696 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:08:57,912 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2158s

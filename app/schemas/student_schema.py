@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from app.schemas.attendance_schema import (
     AttendanceResponse
 )
@@ -7,10 +7,22 @@ from app.schemas.attendance_schema import (
 # Request body used when creating a student.
 # FastAPI validates incoming JSON against these required fields.
 class StudentCreate(BaseModel):
-    name: str
-    email: str
-    phone: str
-    course: str
+    name: str = Field(
+        min_length=2,
+        max_length=50
+    )
+
+    email: EmailStr
+
+    phone: str = Field(
+        min_length=10,
+        max_length=15
+    )
+
+    course: str = Field(
+        min_length=2,
+        max_length=50
+    )
     
 
 # Request body used when updating a student.

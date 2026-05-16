@@ -1,6 +1,5 @@
 from sqlalchemy import desc
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -15,6 +14,8 @@ from app.schemas.student_schema import (
 from app.schemas.common_schema import (
     StandardResponse
 )
+from sqlalchemy.exc import IntegrityError
+from app.core.logger import logger
 
 router = APIRouter()
 
@@ -40,8 +41,32 @@ def create_student(
 
     # Save the student and refresh it so generated fields like id are available.
     db.add(new_student)
-    db.commit()
-    db.refresh(new_student)
+    try:
+        # Attempt database transaction commit
+        db.commit()
+
+        # Refresh ORM object with generated DB values
+        db.refresh(new_student)
+        
+        # Log successful student creation activity
+        logger.info(
+            f"Student created successfully: "
+            f"{new_student.email}"
+        )
+
+    except IntegrityError:
+        # Log duplicate email violation attempt
+        logger.warning(
+            f"Duplicate student email attempted: "
+            f"{student.email}"
+        )
+        # Rollback failed transaction to keep session clean
+        db.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail="Student email already exists"
+        )
 
     # Convert the ORM object into the response schema before returning it.
     return StandardResponse(
@@ -129,7 +154,7 @@ def get_students(
 # Fetch a single student by ID, including attendance data from the relationship.
 @router.get(
     "/students/{student_id}",
-    response_model=StudentResponse
+    response_model=StandardResponse
 )
 def get_student(
     student_id: int,
@@ -148,7 +173,11 @@ def get_student(
             detail="Student not found"
         )
 
-    return student
+    return StandardResponse(
+        success=True,
+        message="Student retrieved successfully",
+        data=StudentResponse.model_validate(student)
+    )
 
 # Update an existing student record. Only admin users can access this route.
 @router.put("/students/{student_id}")
@@ -160,16 +189,43 @@ def update_student(
 ):
     # Load the existing student record before changing its fields.
     student = db.query(Student).filter(Student.id == student_id).first()
+    # Ensure the student exists before attempting updates.
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
 
     # Copy validated request values onto the database model.
-    student.name = updated_student.name
-    student.email = updated_student.email
-    student.phone = updated_student.phone
-    student.course = updated_student.course
+    update_data = updated_student.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(student, field, value)
+    
+    try:
+        # Attempt database transaction commit
+        db.commit()
 
-    # Persist the changes and refresh the model for the response.
-    db.commit()
-    db.refresh(student)
+        # Refresh ORM object with updated database values
+        db.refresh(student)
+
+        logger.info(
+            f"Student updated successfully: "
+            f"{student.email}"
+        )
+
+    except IntegrityError:
+        # Rollback failed transaction to reset session state
+        db.rollback()
+
+        logger.warning(
+            f"Duplicate email update attempted: "
+            f"{updated_student.email}"
+        )
+
+        raise HTTPException(
+            status_code=400,
+            detail="Student email already exists"
+        )
 
     return StandardResponse(
         success=True,
@@ -199,6 +255,11 @@ def delete_student(
     db.delete(student)
 
     db.commit()
+
+    logger.info(
+        f"Student deleted successfully: "
+        f"{student.email}"
+    )
 
     return StandardResponse(
         success=True,

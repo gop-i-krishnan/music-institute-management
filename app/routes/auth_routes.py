@@ -11,6 +11,8 @@ from app.core.security import (
     create_access_token
 )
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
+from app.core.logger import logger
 
 router = APIRouter()
 
@@ -34,11 +36,36 @@ def register_user(
     )
 
     # Save the user to the database.
+    # Add the new user object into SQLAlchemy session.
     db.add(new_user)
 
-    db.commit()
+    try:
+        # Attempt database transaction commit.
+        db.commit()
 
-    db.refresh(new_user)
+        # Refresh ORM object with generated database values.
+        db.refresh(new_user)
+
+        # Log successful user registration activity.
+        logger.info(
+            f"User registered successfully: "
+            f"{new_user.email}"
+        )
+
+    except IntegrityError:
+        # Rollback failed transaction to reset session state.
+        db.rollback()
+
+        # Log duplicate email registration attempt.
+        logger.warning(
+            f"Duplicate registration attempted: "
+            f"{user.email}"
+        )
+
+        raise HTTPException(
+            status_code=400,
+            detail="User email already exists"
+        )
 
     return {
         "message": "User registered successfully"

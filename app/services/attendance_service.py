@@ -2,6 +2,8 @@ from fastapi import HTTPException
 
 from app.models.student import Student
 from app.models.attendance import Attendance
+from sqlalchemy.exc import SQLAlchemyError
+from app.core.logger import logger
 
 
 # Create an attendance record after confirming the student exists.
@@ -25,15 +27,37 @@ def create_attendance_record(
     # Store who marked the attendance using the current user's email.
     new_attendance = Attendance(
         student_id=attendance.student_id,
-        status=attendance.status,
+        # Normalize attendance status format for consistent database storage.
+        status=attendance.status.capitalize(),
         marked_by=current_user["email"]
     )
 
-    # Insert the attendance row and refresh it to get generated values like id.
+    # Persist attendance safely while handling transaction failures gracefully.
     db.add(new_attendance)
+    try:
+        # Attempt database transaction commit.
+        db.commit()
 
-    db.commit()
+        # Refresh ORM object with generated DB values.
+        db.refresh(new_attendance)
 
-    db.refresh(new_attendance)
+        logger.info(
+            f"Attendance marked for "
+            f"student_id={attendance.student_id}"
+        )
+
+    except SQLAlchemyError as e:
+        # Rollback failed transaction to reset session state.
+        db.rollback()
+
+        logger.error(
+            f"Attendance creation failed for "
+            f"student_id={attendance.student_id}: {str(e)}"
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to mark attendance"
+        )
 
     return new_attendance

@@ -4,6 +4,10 @@ from datetime import datetime, timedelta
 from jose import JWTError
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+import os
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 
 # Password hashing context used to hash and verify user passwords.
 pwd_context = CryptContext(
@@ -12,12 +16,16 @@ pwd_context = CryptContext(
 )
 
 # JWT signing settings used when access tokens are created and verified.
-SECRET_KEY = "mysecretkey"
+# Secret key used for JWT token signing
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-ALGORITHM = "HS256"
+# JWT encryption algorithm
+ALGORITHM = os.getenv("ALGORITHM")
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+# Token expiration duration loaded from environment
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+)
 
 # Convert a plain password into a secure hash before saving it.
 def hash_password(password: str):

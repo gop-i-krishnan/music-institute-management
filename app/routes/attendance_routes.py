@@ -3,12 +3,9 @@ from fastapi import (
     Depends,
     HTTPException
 )
-
 from sqlalchemy.orm import Session
-
 from app.database import get_db
 from app.models.student import Student
-
 from app.schemas.attendance_schema import (
     AttendanceCreate,
     AttendanceResponse
@@ -16,11 +13,12 @@ from app.schemas.attendance_schema import (
 from app.services.attendance_service import (
     create_attendance_record
 )
-
-
 from app.core.security import (
     admin_only,
     get_current_user
+)
+from app.schemas.common_schema import (
+    StandardResponse
 )
 
 router = APIRouter()
@@ -28,7 +26,10 @@ router = APIRouter()
 
 # Mark attendance for a student. Only admin users can access this route.
 # The service layer handles student validation and database insert work.
-@router.post("/attendance")
+@router.post(
+    "/attendance",
+    response_model=StandardResponse
+)
 def mark_attendance(
     attendance: AttendanceCreate,
     db: Session = Depends(get_db),
@@ -41,10 +42,13 @@ def mark_attendance(
         current_user
     )
 
-    return {
-        "message": "Attendance marked successfully",
-        "attendance_id": new_attendance.id
-    }
+    return StandardResponse(
+        success=True,
+        message="Attendance marked successfully",
+        data={
+            "attendance_id": new_attendance.id
+        }
+    )
 
 
 # Return all attendance records for a specific student.

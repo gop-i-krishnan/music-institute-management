@@ -1,9 +1,14 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+import os
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 
 # PostgreSQL connection URL for the music institute database.
-DATABASE_URL = "postgresql://postgres:gopi123@localhost/music_institute_db"
+# PostgreSQL connection URL loaded securely from environment
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # SQLAlchemy engine manages the database connection pool.
 engine = create_engine(DATABASE_URL)
