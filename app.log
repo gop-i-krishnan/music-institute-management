@@ -15,3 +15,20 @@
 2026-05-16 20:07:39,446 INFO app.core.logger Completed request: GET /students Status=200 Duration=0.0237s
 2026-05-16 20:08:57,696 INFO app.core.logger Incoming request: POST /login
 2026-05-16 20:08:57,912 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2158s
+2026-05-16 20:26:50,863 INFO app.core.logger Incoming request: GET /docs
+2026-05-16 20:26:50,863 INFO app.core.logger Completed request: GET /docs Status=200 Duration=0.0000s
+2026-05-16 20:26:50,974 INFO app.core.logger Incoming request: GET /openapi.json
+2026-05-16 20:26:51,024 INFO app.core.logger Completed request: GET /openapi.json Status=200 Duration=0.0491s
+2026-05-16 20:27:06,332 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:06,670 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.3375s
+2026-05-16 20:27:08,843 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:09,052 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2095s
+2026-05-16 20:27:10,492 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:10,707 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2148s
+2026-05-16 20:27:11,559 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:11,774 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2150s
+2026-05-16 20:27:12,285 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:12,497 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2115s
+2026-05-16 20:27:13,009 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:27:13,012 WARNING slowapi ratelimit 5 per 1 minute (127.0.0.1) exceeded at endpoint: /login
+2026-05-16 20:27:13,015 INFO app.core.logger Completed request: POST /login Status=429 Duration=0.0060s

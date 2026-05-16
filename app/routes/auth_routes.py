@@ -13,6 +13,8 @@ from app.core.security import (
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
 from app.core.logger import logger
+from app.core.rate_limiter import limiter
+from fastapi import Request
 
 router = APIRouter()
 
@@ -75,7 +77,9 @@ def register_user(
 # Authenticate a user and return a bearer token for protected routes.
 # OAuth2PasswordRequestForm sends the email value in form_data.username.
 @router.post("/login")
+@limiter.limit("5/minute")
 def login_user(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
