@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from uuid import uuid4
 
 from app.main import app
 
@@ -35,10 +36,25 @@ def test_invalid_login():
 # Verify successful login returns JWT token.
 def test_successful_login():
 
+    email = f"admin-{uuid4().hex}@test.com"
+
+    # Create the user required for this test in the fresh test database.
+    register_response = client.post(
+        "/register",
+        json={
+            "name": "Admin",
+            "email": email,
+            "password": "strongpassword",
+            "role": "admin"
+        }
+    )
+
+    assert register_response.status_code == 200
+
     response = client.post(
         "/login",
         data={
-            "username": "admin@test.com",
+            "username": email,
             "password": "strongpassword"
         }
     )
