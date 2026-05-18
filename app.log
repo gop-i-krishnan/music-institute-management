@@ -32,3 +32,23 @@
 2026-05-16 20:27:13,009 INFO app.core.logger Incoming request: POST /login
 2026-05-16 20:27:13,012 WARNING slowapi ratelimit 5 per 1 minute (127.0.0.1) exceeded at endpoint: /login
 2026-05-16 20:27:13,015 INFO app.core.logger Completed request: POST /login Status=429 Duration=0.0060s
+2026-05-16 20:50:47,690 INFO app.core.logger Incoming request: GET /docs
+2026-05-16 20:50:47,690 INFO app.core.logger Completed request: GET /docs Status=200 Duration=0.0000s
+2026-05-16 20:50:47,791 INFO app.core.logger Incoming request: GET /openapi.json
+2026-05-16 20:50:47,839 INFO app.core.logger Completed request: GET /openapi.json Status=200 Duration=0.0486s
+2026-05-16 20:50:57,811 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:50:58,109 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2983s
+2026-05-16 20:51:20,341 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:20,555 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2135s
+2026-05-16 20:51:22,741 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:22,955 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2138s
+2026-05-16 20:51:23,531 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:23,748 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2165s
+2026-05-16 20:51:24,227 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:24,440 INFO app.core.logger Completed request: POST /login Status=200 Duration=0.2129s
+2026-05-16 20:51:24,771 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:24,771 WARNING slowapi ratelimit 5 per 1 minute (127.0.0.1) exceeded at endpoint: /login
+2026-05-16 20:51:24,771 INFO app.core.logger Completed request: POST /login Status=429 Duration=0.0000s
+2026-05-16 20:51:25,318 INFO app.core.logger Incoming request: POST /login
+2026-05-16 20:51:25,323 WARNING slowapi ratelimit 5 per 1 minute (127.0.0.1) exceeded at endpoint: /login
+2026-05-16 20:51:25,326 INFO app.core.logger Completed request: POST /login Status=429 Duration=0.0083s
